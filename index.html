@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capacitación Nitro | International Connections</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: url('https://images.unsplash.com/photo-1500313830540-7b6650a74fd0?q=80&w=2070') no-repeat center center fixed; background-size: cover; }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .transition-all-suave { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hidden { display: none; }
+        input[type=range] { accent-color: #581c87; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div id="login-section" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="flex flex-col items-center mb-0 w-full max-w-sm">
+            <div class="glass-card p-5 rounded-3xl rounded-bl-none border-white/40 shadow-xl -mb-16 relative z-20">
+                <p id="lagarto-texto" class="text-sm font-bold text-slate-800 italic leading-tight text-center">
+                    ¡Habla, colega! 👋 <br> ¡Regístrate o ingresa para ver tus avances!
+                </p>
+                <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-white/40"></div>
+            </div>
+            <img src="https://i.ibb.co/N25tQ11y/Dise-o-sin-t-t-lo-Photoroom-1.png" class="w-64 md:w-80 h-auto filter drop-shadow-xl relative z-10" alt="Mascota Nitro">
+        </div>
+
+        <div class="glass-card p-4 -mt-10 mb-8 rounded-3xl flex items-center justify-center shadow-2xl relative z-20">
+            <img src="https://nitro-tienda.com/web/image/website/1/logo/Nitro?unique=6d3069e" alt="Logo Nitro" class="h-10">
+        </div>
+
+        <div class="glass-card p-8 w-full max-w-md shadow-2xl">
+            <div id="login-form" class="space-y-4">
+                <input type="text" id="user-login" placeholder="Tu usuario" class="w-full p-4 bg-white/50 border rounded-xl outline-none focus:ring-2 focus:ring-purple-600">
+                <input type="password" id="pass-login" placeholder="Contraseña" class="w-full p-4 bg-white/50 border rounded-xl outline-none focus:ring-2 focus:ring-purple-600">
+                <button onclick="handleLogin()" id="btn-login" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl hover:scale-105 transition-all-suave">INGRESAR</button>
+                <p class="text-center text-sm text-slate-700">¿No tienes cuenta? <button onclick="toggleAuth()" class="text-purple-900 font-bold underline">Crea una aquí</button></p>
+            </div>
+
+            <div id="register-form" class="hidden space-y-4">
+                <input type="text" id="reg-nombre" placeholder="Nombre completo" class="w-full p-4 bg-white/50 border rounded-xl outline-none focus:ring-2 focus:ring-purple-600">
+                <input type="text" id="reg-usuario" placeholder="Crea un usuario" class="w-full p-4 bg-white/50 border rounded-xl outline-none focus:ring-2 focus:ring-purple-600">
+                <input type="password" id="reg-pass" placeholder="Crea una contraseña" class="w-full p-4 bg-white/50 border rounded-xl outline-none focus:ring-2 focus:ring-purple-600">
+                <input type="text" id="reg-cargo" placeholder="Tu cargo en la empresa" class="w-full p-4 bg-white/50 border rounded-xl outline-none focus:ring-2 focus:ring-purple-600">
+                <button onclick="handleRegister()" id="btn-register" class="w-full bg-green-700 text-white font-bold py-4 rounded-xl hover:scale-105 transition-all-suave uppercase">Registrarme</button>
+                <p class="text-center text-sm text-slate-700"><button onclick="toggleAuth()" class="text-purple-900 font-bold underline">Volver al login</button></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-section" class="hidden p-6 max-w-6xl mx-auto space-y-8">
+        <header class="flex flex-col md:flex-row justify-between items-center glass-card p-6 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-purple-900 uppercase">Panel de Capacitación</h1>
+                <p class="text-slate-700 font-bold">Bienvenido, <span id="user-display-name">---</span></p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="abrirModalNuevoCurso()" class="bg-purple-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-800">+ Nuevo Curso</button>
+                <button onclick="location.reload()" class="bg-slate-200 p-3 rounded-xl">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Mis Cursos Activos</h2>
+                <div id="mis-cursos-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
+            </div>
+
+            <div class="space-y-6">
+                <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Progreso del Equipo</h2>
+                <div id="ranking-container" class="glass-card p-4 space-y-3">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-container" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div id="modal-content" class="glass-card w-full max-w-lg p-8 shadow-2xl"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUboy6s6QOvGbG05bbxYkaAVAHMcSXuVXKIvqgXCVpBq19daZDLo94H6D1L-ymFLU/exec"; 
+        let currentUser = null;
+
+        // --- LÓGICA DE NAVEGACIÓN ---
+        function toggleAuth() {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('register-form').classList.toggle('hidden');
+        }
+
+        // --- COMUNICACIÓN CON EL BACKEND ---
+        async function apiPost(data) {
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        }
+
+        // --- MANEJO DE REGISTRO ---
+        async function handleRegister() {
+            const data = {
+                action: 'register',
+                data: {
+                    nombre: document.getElementById('reg-nombre').value,
+                    usuario: document.getElementById('reg-usuario').value,
+                    password: document.getElementById('reg-pass').value,
+                    cargo: document.getElementById('reg-cargo').value
+                }
+            };
+            const res = await apiPost(data);
+            alert(res.message || "Usuario registrado. Ya puedes entrar.");
+            if(res.success) toggleAuth();
+        }
+
+        // --- MANEJO DE LOGIN ---
+        async function handleLogin() {
+            const btn = document.getElementById('btn-login');
+            btn.innerText = "VERIFICANDO...";
+            const data = {
+                action: 'login',
+                data: {
+                    usuario: document.getElementById('user-login').value,
+                    password: document.getElementById('pass-login').value
+                }
+            };
+            const res = await apiPost(data);
+            if(res.success) {
+                currentUser = res;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                document.getElementById('user-display-name').innerText = res.nombre;
+                cargarDashboard();
+            } else {
+                alert(res.message);
+                btn.innerText = "INGRESAR";
+            }
+        }
+
+        // --- CARGAR DASHBOARD ---
+        async function cargarDashboard() {
+            const res = await apiPost({ action: 'getDashboard', userId: currentUser.userId });
+            
+            // Mis Cursos
+            const container = document.getElementById('mis-cursos-container');
+            container.innerHTML = "";
+            res.misCursos.forEach(curso => {
+                if(curso.estado === "Activo") {
+                    container.innerHTML += `
+                        <div onclick="abrirReporteQuincenal('${curso.id}', '${curso.nombre}')" class="glass-card p-5 cursor-pointer hover:scale-105 transition-all-suave border-l-8 border-purple-800">
+                            <h3 class="font-black text-slate-800 uppercase">${curso.nombre}</h3>
+                            <div class="w-full bg-white/30 rounded-full h-2 mt-3">
+                                <div class="bg-purple-800 h-2 rounded-full" style="width: ${curso.progreso}%"></div>
+                            </div>
+                            <p class="text-xs mt-2 font-bold text-slate-600">Avance: ${curso.progreso}%</p>
+                        </div>
+                    `;
+                }
+            });
+
+            // Ranking
+            const rankCont = document.getElementById('ranking-container');
+            rankCont.innerHTML = "";
+            res.globalRanking.forEach(r => {
+                rankCont.innerHTML += `
+                    <div class="flex justify-between items-center border-b border-white/20 pb-2">
+                        <div class="text-xs">
+                            <p class="font-bold text-purple-900">${r.usuario}</p>
+                            <p class="text-slate-500">${r.curso}</p>
+                        </div>
+                        <span class="text-xs font-black bg-purple-100 text-purple-900 p-1 rounded">${r.progreso}%</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- MODAL NUEVO CURSO ---
+        function abrirModalNuevoCurso() {
+            document.getElementById('modal-container').classList.remove('hidden');
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-black mb-4">INICIAR NUEVA CAPACITACIÓN</h2>
+                <input type="text" id="new-curso-nombre" placeholder="Nombre del curso" class="w-full p-3 border rounded-xl mb-3">
+                <input type="date" id="new-curso-fecha" class="w-full p-3 border rounded-xl mb-4">
+                <div class="flex gap-2">
+                    <button onclick="guardarNuevoCurso()" class="flex-1 bg-purple-900 text-white font-bold py-3 rounded-xl">CREAR</button>
+                    <button onclick="cerrarModal()" class="flex-1 bg-slate-200 py-3 rounded-xl">CANCELAR</button>
+                </div>
+            `;
+        }
+
+        async function guardarNuevoCurso() {
+            await apiPost({
+                action: 'addCourse',
+                data: {
+                    userId: currentUser.userId,
+                    nombre: document.getElementById('new-curso-nombre').value,
+                    fechaInicio: document.getElementById('new-curso-fecha').value
+                }
+            });
+            cerrarModal();
+            cargarDashboard();
+        }
+
+        // --- MODAL REPORTE QUINCENAL ---
+        function abrirReporteQuincenal(id, nombre) {
+            document.getElementById('modal-container').classList.remove('hidden');
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-black mb-2 uppercase">Reporte Quincenal</h2>
+                <p class="text-sm font-bold text-purple-900 mb-6 italic">¿Qué aprendiste del curso de ${nombre} esta quincena?</p>
+                
+                <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24" placeholder="Escribe aquí tus aprendizajes..."></textarea>
+                
+                <label class="block text-xs font-bold mb-1">Porcentaje de avance: <span id="val-prog" class="text-purple-900">50%</span></label>
+                <input type="range" id="rep-progreso" min="0" max="100" class="w-full mb-6" oninput="document.getElementById('val-prog').innerText = this.value + '%'">
+                
+                <label class="block text-xs font-bold mb-1">Foto de Evidencia:</label>
+                <input type="file" id="rep-foto" class="text-xs mb-6">
+
+                <div class="flex flex-col gap-2">
+                    <button onclick="enviarReporte('${id}')" id="btn-enviar" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl">GUARDAR AVANCE</button>
+                    <button onclick="finalizarCurso('${id}')" class="w-full border-2 border-green-600 text-green-700 font-bold py-3 rounded-xl hover:bg-green-50">FINALIZAR CURSO COMPLETADO</button>
+                    <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2">Cerrar sin cambios</button>
+                </div>
+            `;
+        }
+
+        async function enviarReporte(cursoId) {
+            const btn = document.getElementById('btn-enviar');
+            btn.innerText = "SUBIENDO EVIDENCIA...";
+            const fileInput = document.getElementById('rep-foto');
+            let base64Image = "";
+            let mimeType = "";
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                mimeType = file.type;
+                base64Image = await toBase64(file);
+            }
+
+            const data = {
+                action: 'updateProgress',
+                data: {
+                    cursoId: cursoId,
+                    aprendizaje: document.getElementById('rep-aprendizaje').value,
+                    porcentaje: document.getElementById('rep-progreso').value,
+                    image: base64Image,
+                    mimeType: mimeType
+                }
+            };
+            await apiPost(data);
+            cerrarModal();
+            cargarDashboard();
+        }
+
+        async function finalizarCurso(id) {
+            if(confirm("¿Estás seguro de finalizar este curso? Se marcará como 100% completado.")){
+                await apiPost({ action: 'finishCourse', data: { cursoId: id } });
+                cerrarModal();
+                cargarDashboard();
+            }
+        }
+
+        function cerrarModal() { document.getElementById('modal-container').classList.add('hidden'); }
+
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    </script>
+</body>
+</html>
