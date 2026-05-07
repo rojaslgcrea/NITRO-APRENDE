@@ -12,21 +12,9 @@
         .transition-all-suave { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .hidden { display: none; }
         input[type=range] { accent-color: #581c87; }
-        
-        /* Estilo para el botón de cierre de sesión en la esquina superior derecha */
-        #logout-floating-btn {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 100;
-        }
     </style>
 </head>
 <body class="min-h-screen">
-
-    <button id="logout-floating-btn" onclick="handleLogout()" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all-suave uppercase text-xs">
-        Cerrar Sesión
-    </button>
 
     <div id="login-section" class="flex flex-col items-center justify-center min-h-screen p-4">
         <div class="flex flex-col items-center mb-0 w-full max-w-sm">
@@ -70,6 +58,7 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="abrirModalNuevoCurso()" class="bg-purple-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-800">+ Nuevo Curso</button>
+                <button onclick="location.reload()" class="bg-slate-200 p-3 rounded-xl">Cerrar Sesión</button>
             </div>
         </header>
 
@@ -95,28 +84,6 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0jR47KwWq2oavH_5NQA4CRsz_5mTECj9OaB1EmBh--Jr2lziuE-0bhLs3QB9Rix4/exec"; 
         let currentUser = null;
-
-        // --- LÓGICA DE PERSISTENCIA (CAMBIO 1) ---
-        window.addEventListener('load', () => {
-            const savedUser = localStorage.getItem('nitro_session');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                initSession(currentUser);
-            }
-        });
-
-        function handleLogout() {
-            localStorage.removeItem('nitro_session');
-            location.reload();
-        }
-
-        function initSession(user) {
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('logout-floating-btn').classList.remove('hidden'); // Mostrar botón de cierre
-            document.getElementById('user-display-name').innerText = user.nombre;
-            cargarDashboard();
-        }
 
         // --- LÓGICA DE NAVEGACIÓN ---
         function toggleAuth() {
@@ -163,8 +130,10 @@
             const res = await apiPost(data);
             if(res.success) {
                 currentUser = res;
-                localStorage.setItem('nitro_session', JSON.stringify(res)); // Guardar para persistencia
-                initSession(res);
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                document.getElementById('user-display-name').innerText = res.nombre;
+                cargarDashboard();
             } else {
                 alert(res.message);
                 btn.innerText = "INGRESAR";
@@ -237,54 +206,87 @@
 
         // --- MODAL REPORTE QUINCENAL ---
         function abrirReporteQuincenal(id, nombre) {
-            document.getElementById('modal-container').classList.remove('hidden');
-            document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-black mb-2 uppercase">Reporte Quincenal</h2>
-                <p class="text-sm font-bold text-purple-900 mb-6 italic">¿Qué aprendiste del curso de ${nombre} esta quincena?</p>
-                
-                <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24" placeholder="Escribe aquí tus aprendizajes..."></textarea>
-                
-                <label class="block text-xs font-bold mb-1">Porcentaje de avance: <span id="val-prog" class="text-purple-900">50%</span></label>
-                <input type="range" id="rep-progreso" min="0" max="100" class="w-full mb-6" oninput="document.getElementById('val-prog').innerText = this.value + '%'">
-                
-                <label class="block text-xs font-bold mb-1">Foto de Evidencia:</label>
-                <input type="file" id="rep-foto" class="text-xs mb-6">
+    document.getElementById('modal-container').classList.remove('hidden');
+    document.getElementById('modal-content').innerHTML = `
+        <h2 class="text-xl font-black mb-2 uppercase">Reporte de Avance</h2>
+        <p class="text-sm font-bold text-purple-900 mb-6 italic">Curso: ${nombre}</p>
+        
+        <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24" placeholder="Escribe aquí tus aprendizajes..."></textarea>
+        
+        <label class="block text-xs font-bold mb-1">Porcentaje de avance: <span id="val-prog" class="text-purple-900">50%</span></label>
+        <input type="range" id="rep-progreso" min="0" max="100" class="w-full mb-6" 
+               oninput="actualizarUIReporte(this.value)">
+        
+        <div id="zona-certificado" class="hidden mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl transition-all-suave">
+            <p class="text-xs font-bold text-green-800 mb-2">🏆 ¡Felicidades! Sube tu certificado o foto final (Opcional):</p>
+            <input type="file" id="rep-certificado" accept="image/*,application/pdf" class="text-xs">
+        </div>
 
-                <div class="flex flex-col gap-2">
-                    <button onclick="enviarReporte('${id}')" id="btn-enviar" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl">GUARDAR AVANCE</button>
-                    <button onclick="finalizarCurso('${id}')" class="w-full border-2 border-green-600 text-green-700 font-bold py-3 rounded-xl hover:bg-green-50">FINALIZAR CURSO COMPLETADO</button>
-                    <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2">Cerrar sin cambios</button>
-                </div>
-            `;
+        <div id="zona-evidencia" class="mb-6">
+            <label class="block text-xs font-bold mb-1">Foto o documento de evidencia (Opcional):</label>
+            <input type="file" id="rep-foto" accept="image/*,application/pdf" class="text-xs">
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <button onclick="enviarReporte('${id}')" id="btn-enviar" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl">GUARDAR AVANCE</button>
+            <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2">Cancelar</button>
+        </div>
+    `;
+}
+
+function actualizarUIReporte(valor) {
+    document.getElementById('val-prog').innerText = valor + '%';
+    const zonaCert = document.getElementById('zona-certificado');
+    const zonaEvid = document.getElementById('zona-evidencia');
+
+    if (valor == 100) {
+        zonaCert.classList.remove('hidden');
+        zonaEvid.classList.add('hidden');
+    } else {
+        zonaCert.classList.add('hidden');
+        zonaEvid.classList.remove('hidden');
+    }
+}
+
+       async function enviarReporte(cursoId) {
+    const btn = document.getElementById('btn-enviar');
+    const progreso = document.getElementById('rep-progreso').value;
+    btn.innerText = "PROCESANDO ARCHIVOS...";
+    btn.disabled = true;
+
+    // Si es 100%, buscamos el archivo en el input de certificado, si no, en el de foto normal
+    const fileInput = (progreso == 100) ? document.getElementById('rep-certificado') : document.getElementById('rep-foto');
+    
+    let base64File = "";
+    let mimeType = "";
+
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        mimeType = file.type;
+        base64File = await toBase64(file);
+    }
+
+    const data = {
+        action: 'updateProgress', // El backend ya sabe que si progreso = 100 debe finalizarlo
+        data: {
+            cursoId: cursoId,
+            aprendizaje: document.getElementById('rep-aprendizaje').value,
+            porcentaje: progreso,
+            image: base64File,
+            mimeType: mimeType
         }
+    };
 
-        async function enviarReporte(cursoId) {
-            const btn = document.getElementById('btn-enviar');
-            btn.innerText = "SUBIENDO EVIDENCIA...";
-            const fileInput = document.getElementById('rep-foto');
-            let base64Image = "";
-            let mimeType = "";
-
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                mimeType = file.type;
-                base64Image = await toBase64(file);
-            }
-
-            const data = {
-                action: 'updateProgress',
-                data: {
-                    cursoId: cursoId,
-                    aprendizaje: document.getElementById('rep-aprendizaje').value,
-                    porcentaje: document.getElementById('rep-progreso').value,
-                    image: base64Image,
-                    mimeType: mimeType
-                }
-            };
-            await apiPost(data);
-            cerrarModal();
-            cargarDashboard();
-        }
+    try {
+        await apiPost(data);
+        cerrarModal();
+        cargarDashboard();
+    } catch (error) {
+        alert("Error al subir: " + error);
+        btn.innerText = "GUARDAR AVANCE";
+        btn.disabled = false;
+    }
+}
 
         async function finalizarCurso(id) {
             if(confirm("¿Estás seguro de finalizar este curso? Se marcará como 100% completado.")){
