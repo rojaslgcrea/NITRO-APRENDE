@@ -13,7 +13,6 @@
         .hidden { display: none; }
         input[type=range] { accent-color: #581c87; }
         
-        /* Estilo para el botón de cierre de sesión en la esquina superior derecha */
         #logout-floating-btn {
             position: fixed;
             top: 1rem;
@@ -96,7 +95,6 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0jR47KwWq2oavH_5NQA4CRsz_5mTECj9OaB1EmBh--Jr2lziuE-0bhLs3QB9Rix4/exec"; 
         let currentUser = null;
 
-        // --- LÓGICA DE PERSISTENCIA (CAMBIO 1) ---
         window.addEventListener('load', () => {
             const savedUser = localStorage.getItem('nitro_session');
             if (savedUser) {
@@ -113,18 +111,16 @@
         function initSession(user) {
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('logout-floating-btn').classList.remove('hidden'); // Mostrar botón de cierre
+            document.getElementById('logout-floating-btn').classList.remove('hidden');
             document.getElementById('user-display-name').innerText = user.nombre;
             cargarDashboard();
         }
 
-        // --- LÓGICA DE NAVEGACIÓN ---
         function toggleAuth() {
             document.getElementById('login-form').classList.toggle('hidden');
             document.getElementById('register-form').classList.toggle('hidden');
         }
 
-        // --- COMUNICACIÓN CON EL BACKEND ---
         async function apiPost(data) {
             const response = await fetch(SCRIPT_URL, {
                 method: "POST",
@@ -133,7 +129,6 @@
             return await response.json();
         }
 
-        // --- MANEJO DE REGISTRO ---
         async function handleRegister() {
             const data = {
                 action: 'register',
@@ -149,7 +144,6 @@
             if(res.success) toggleAuth();
         }
 
-        // --- MANEJO DE LOGIN ---
         async function handleLogin() {
             const btn = document.getElementById('btn-login');
             btn.innerText = "VERIFICANDO...";
@@ -163,7 +157,7 @@
             const res = await apiPost(data);
             if(res.success) {
                 currentUser = res;
-                localStorage.setItem('nitro_session', JSON.stringify(res)); // Guardar para persistencia
+                localStorage.setItem('nitro_session', JSON.stringify(res));
                 initSession(res);
             } else {
                 alert(res.message);
@@ -171,11 +165,8 @@
             }
         }
 
-        // --- CARGAR DASHBOARD ---
         async function cargarDashboard() {
             const res = await apiPost({ action: 'getDashboard', userId: currentUser.userId });
-            
-            // Mis Cursos
             const container = document.getElementById('mis-cursos-container');
             container.innerHTML = "";
             res.misCursos.forEach(curso => {
@@ -192,7 +183,6 @@
                 }
             });
 
-            // Ranking
             const rankCont = document.getElementById('ranking-container');
             rankCont.innerHTML = "";
             res.globalRanking.forEach(r => {
@@ -208,7 +198,6 @@
             });
         }
 
-        // --- MODAL NUEVO CURSO ---
         function abrirModalNuevoCurso() {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
@@ -235,37 +224,57 @@
             cargarDashboard();
         }
 
-        // --- MODAL REPORTE QUINCENAL ---
+        // --- CAMBIO SOLICITADO: LÓGICA DE 100% Y CERTIFICADO ---
+        function actualizarUIReporte(valor) {
+            document.getElementById('val-prog').innerText = valor + '%';
+            const zonaCert = document.getElementById('zona-certificado');
+            const zonaEvid = document.getElementById('zona-evidencia');
+            if (valor == 100) {
+                zonaCert.classList.remove('hidden');
+                zonaEvid.classList.add('hidden');
+            } else {
+                zonaCert.classList.add('hidden');
+                zonaEvid.classList.remove('hidden');
+            }
+        }
+
         function abrirReporteQuincenal(id, nombre) {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-black mb-2 uppercase">Reporte Quincenal</h2>
-                <p class="text-sm font-bold text-purple-900 mb-6 italic">¿Qué aprendiste del curso de ${nombre} esta quincena?</p>
-                
+                <h2 class="text-xl font-black mb-2 uppercase">Reporte de Avance</h2>
+                <p class="text-sm font-bold text-purple-900 mb-6 italic">Curso: ${nombre}</p>
                 <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24" placeholder="Escribe aquí tus aprendizajes..."></textarea>
-                
                 <label class="block text-xs font-bold mb-1">Porcentaje de avance: <span id="val-prog" class="text-purple-900">50%</span></label>
-                <input type="range" id="rep-progreso" min="0" max="100" class="w-full mb-6" oninput="document.getElementById('val-prog').innerText = this.value + '%'">
+                <input type="range" id="rep-progreso" min="0" max="100" class="w-full mb-6" oninput="actualizarUIReporte(this.value)">
                 
-                <label class="block text-xs font-bold mb-1">Foto de Evidencia:</label>
-                <input type="file" id="rep-foto" class="text-xs mb-6">
+                <div id="zona-certificado" class="hidden mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl transition-all-suave">
+                    <p class="text-xs font-bold text-green-800 mb-2">🏆 ¡Felicidades! Sube tu certificado o foto final (Opcional):</p>
+                    <input type="file" id="rep-certificado" accept="image/*,application/pdf" class="text-xs">
+                </div>
+
+                <div id="zona-evidencia" class="mb-6">
+                    <label class="block text-xs font-bold mb-1">Foto o documento de evidencia (Opcional):</label>
+                    <input type="file" id="rep-foto" accept="image/*,application/pdf" class="text-xs">
+                </div>
 
                 <div class="flex flex-col gap-2">
                     <button onclick="enviarReporte('${id}')" id="btn-enviar" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl">GUARDAR AVANCE</button>
-                    <button onclick="finalizarCurso('${id}')" class="w-full border-2 border-green-600 text-green-700 font-bold py-3 rounded-xl hover:bg-green-50">FINALIZAR CURSO COMPLETADO</button>
-                    <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2">Cerrar sin cambios</button>
+                    <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2">Cancelar</button>
                 </div>
             `;
         }
 
         async function enviarReporte(cursoId) {
             const btn = document.getElementById('btn-enviar');
-            btn.innerText = "SUBIENDO EVIDENCIA...";
-            const fileInput = document.getElementById('rep-foto');
+            const progreso = document.getElementById('rep-progreso').value;
+            btn.innerText = "PROCESANDO...";
+            btn.disabled = true;
+
+            const fileInput = (progreso == 100) ? document.getElementById('rep-certificado') : document.getElementById('rep-foto');
             let base64Image = "";
             let mimeType = "";
 
-            if (fileInput.files.length > 0) {
+            if (fileInput && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 mimeType = file.type;
                 base64Image = await toBase64(file);
@@ -276,7 +285,7 @@
                 data: {
                     cursoId: cursoId,
                     aprendizaje: document.getElementById('rep-aprendizaje').value,
-                    porcentaje: document.getElementById('rep-progreso').value,
+                    porcentaje: progreso,
                     image: base64Image,
                     mimeType: mimeType
                 }
