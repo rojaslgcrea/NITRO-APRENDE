@@ -12,9 +12,21 @@
         .transition-all-suave { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .hidden { display: none; }
         input[type=range] { accent-color: #581c87; }
+        
+        /* Estilo para el botón de cierre de sesión en la esquina superior derecha */
+        #logout-floating-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+        }
     </style>
 </head>
 <body class="min-h-screen">
+
+    <button id="logout-floating-btn" onclick="handleLogout()" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all-suave uppercase text-xs">
+        Cerrar Sesión
+    </button>
 
     <div id="login-section" class="flex flex-col items-center justify-center min-h-screen p-4">
         <div class="flex flex-col items-center mb-0 w-full max-w-sm">
@@ -58,7 +70,6 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="abrirModalNuevoCurso()" class="bg-purple-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-800">+ Nuevo Curso</button>
-                <button onclick="location.reload()" class="bg-slate-200 p-3 rounded-xl">Cerrar Sesión</button>
             </div>
         </header>
 
@@ -84,6 +95,28 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0jR47KwWq2oavH_5NQA4CRsz_5mTECj9OaB1EmBh--Jr2lziuE-0bhLs3QB9Rix4/exec"; 
         let currentUser = null;
+
+        // --- LÓGICA DE PERSISTENCIA (CAMBIO 1) ---
+        window.addEventListener('load', () => {
+            const savedUser = localStorage.getItem('nitro_session');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                initSession(currentUser);
+            }
+        });
+
+        function handleLogout() {
+            localStorage.removeItem('nitro_session');
+            location.reload();
+        }
+
+        function initSession(user) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('logout-floating-btn').classList.remove('hidden'); // Mostrar botón de cierre
+            document.getElementById('user-display-name').innerText = user.nombre;
+            cargarDashboard();
+        }
 
         // --- LÓGICA DE NAVEGACIÓN ---
         function toggleAuth() {
@@ -130,10 +163,8 @@
             const res = await apiPost(data);
             if(res.success) {
                 currentUser = res;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                document.getElementById('user-display-name').innerText = res.nombre;
-                cargarDashboard();
+                localStorage.setItem('nitro_session', JSON.stringify(res)); // Guardar para persistencia
+                initSession(res);
             } else {
                 alert(res.message);
                 btn.innerText = "INGRESAR";
