@@ -239,14 +239,14 @@
             }
         }
 
-        function abrirReporteQuincenal(id, nombre) {
+        function abrirReporteQuincenal(id, nombre, progresoActual) {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
                 <h2 class="text-xl font-black mb-2 uppercase">Reporte de Avance</h2>
                 <p class="text-sm font-bold text-purple-900 mb-6 italic">Curso: ${nombre}</p>
                 <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24" placeholder="Escribe aquí tus aprendizajes..."></textarea>
                 <label class="block text-xs font-bold mb-1">Porcentaje de avance: <span id="val-prog" class="text-purple-900">50%</span></label>
-                <input type="range" id="rep-progreso" min="0" max="100" class="w-full mb-6" oninput="actualizarUIReporte(this.value)">
+                <input type="range" id="rep-progreso" min="0" max="100" value="${progresoActual}" class="w-full mb-6" oninput="actualizarUIReporte(this.value)"> oninput="actualizarUIReporte(this.value)">
                 
                 <div id="zona-certificado" class="hidden mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl transition-all-suave">
                     <p class="text-xs font-bold text-green-800 mb-2">🏆 ¡Felicidades! Sube tu certificado o foto final (Opcional):</p>
