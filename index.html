@@ -31,7 +31,7 @@
         <div class="flex flex-col items-center mb-0 w-full max-w-sm">
             <div class="glass-card p-5 rounded-3xl rounded-bl-none border-white/40 shadow-xl -mb-16 relative z-20">
                 <p id="lagarto-texto" class="text-sm font-bold text-slate-800 italic leading-tight text-center">
-                    ¡Habla, colega! 👋 <br> ¡Regístrate o ingresa para ver tus avances!
+                    ¡Hola, colega! 👋 <br> ¡Regístrate o ingresa para ver tus avances!
                 </p>
                 <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-white/40"></div>
             </div>
@@ -309,14 +309,20 @@
 	async function verRutaAprendizaje(idCurso, usuario, cursoNombre) {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-black text-slate-800 uppercase mb-1">Ruta de Aprendizaje</h2>
-                <p class="text-xs font-bold text-purple-900 mb-6 uppercase tracking-widest">${usuario} > ${cursoNombre}</p>
-                
-                <div id="historial-lista" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-                    <p class="text-center text-slate-400 py-10">Cargando historial...</p>
-                </div>
+                <div class="relative">
+                    <h2 class="text-xl font-black text-slate-800 uppercase mb-1">Ruta de Aprendizaje</h2>
+                    <p class="text-[10px] font-black text-purple-900 mb-6 uppercase tracking-widest border-b pb-2">
+                        ${usuario} <span class="text-slate-400">/</span> ${cursoNombre}
+                    </p>
+                    
+                    <div id="historial-lista" class="space-y-6 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+                        <p class="text-center text-slate-400 py-10 font-bold animate-pulse">Consultando bitácora...</p>
+                    </div>
 
-                <button onclick="cerrarModal()" class="w-full mt-6 bg-slate-800 text-white font-bold py-3 rounded-xl uppercase text-xs">Cerrar Ruta</button>
+                    <button onclick="cerrarModal()" class="w-full mt-6 bg-purple-900 text-white font-bold py-4 rounded-xl uppercase text-xs shadow-lg hover:bg-slate-800 transition-all">
+                        Cerrar Historial
+                    </button>
+                </div>
             `;
 
             const res = await apiPost({ action: 'getCourseHistory', courseId: idCurso });
@@ -324,20 +330,54 @@
             lista.innerHTML = "";
 
             if (res.historial.length === 0) {
-                lista.innerHTML = "<p class='text-center text-slate-500 italic py-10'>Aún no hay reportes quincenales para este curso.</p>";
+                lista.innerHTML = `
+                    <div class="text-center py-10">
+                        <p class="text-slate-400 italic">Este curso aún no tiene reportes registrados.</p>
+                    </div>`;
                 return;
             }
 
             res.historial.forEach(h => {
+                // Lógica para intentar mostrar previsualización de Google Drive
+                let previewHtml = "";
+                if (h.evidencia && h.evidencia.includes("drive.google.com")) {
+                    const fileId = h.evidencia.split('/d/')[1]?.split('/')[0];
+                    if (fileId) {
+                        previewHtml = `
+                            <div class="mt-3 rounded-xl overflow-hidden border-2 border-purple-100 relative group">
+                                <img src="https://lh3.googleusercontent.com/d/${fileId}" 
+                                     class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" 
+                                     alt="Evidencia quincenal"
+                                     onerror="this.src='https://placehold.co/400x200?text=Evidencia+en+Archivo'">
+                                <a href="${h.evidencia}" target="_blank" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-all">
+                                    VER ARCHIVO COMPLETO ↗
+                                </a>
+                            </div>`;
+                    }
+                }
+
                 lista.innerHTML += `
-                    <div class="border-l-4 border-purple-400 pl-4 py-2 relative">
-                        <div class="absolute w-3 h-3 bg-purple-800 rounded-full -left-[8.5px] top-3"></div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-[10px] font-black text-slate-400">${h.fecha}</span>
-                            <span class="text-[10px] font-black bg-purple-100 text-purple-900 px-2 rounded-full">${h.porcentaje}%</span>
+                    <div class="relative pl-8 border-l-4 border-purple-200 pb-2">
+                        <div class="absolute w-4 h-4 bg-purple-900 rounded-full -left-[10px] top-0 border-4 border-white shadow-sm"></div>
+                        
+                        <div class="glass-card p-4 shadow-sm border border-white/50">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">${h.fecha}</span>
+                                <span class="text-xs font-black text-purple-900 bg-purple-100 px-2 py-0.5 rounded-lg">${h.porcentaje}%</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="block text-[9px] font-black text-purple-700 uppercase mb-1">Lo aprendido:</span>
+                                <p class="text-sm text-slate-700 leading-tight italic font-medium">"${h.aprendizaje}"</p>
+                            </div>
+
+                            ${previewHtml}
+                            
+                            ${!previewHtml && h.evidencia ? `
+                                <a href="${h.evidencia}" target="_blank" class="text-[10px] font-bold text-blue-600 underline mt-2 block">
+                                    Abrir documento de evidencia ↗
+                                </a>` : ''}
                         </div>
-                        <p class="text-sm text-slate-700 leading-tight mb-2 font-medium">"${h.aprendizaje}"</p>
-                        ${h.evidencia ? `<a href="${h.evidencia}" target="_blank" class="text-[10px] text-blue-600 font-bold underline hover:text-blue-800">Ver evidencia fotográfica</a>` : ''}
                     </div>
                 `;
             });
