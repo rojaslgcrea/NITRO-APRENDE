@@ -35,7 +35,7 @@
                 </p>
                 <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-white/40"></div>
             </div>
-            <img src="https://i.ibb.co/N25tQ11y/Dise-o-sin-t-t-lo-Photoroom-1.png" class="w-64 md:w-80 h-auto filter drop-shadow-xl relative z-10" alt="Mascota Nitro">
+            <img src="https://i.ibb.co/N25tQ11y/Dise-o-sin-t-t-lo-Photoroom-1.png" class="w-64 md:w-80 h-auto filter drop-shadow-xl relative z-30" alt="Mascota Nitro">
         </div>
 
         <div class="glass-card p-4 -mt-10 mb-8 rounded-3xl flex items-center justify-center shadow-2xl relative z-20">
@@ -65,10 +65,10 @@
         <header class="flex flex-col md:flex-row justify-between items-center glass-card p-6 gap-4">
             <div>
                 <h1 class="text-2xl font-black text-purple-900 uppercase">Panel de Capacitación</h1>
-                <p class="text-slate-700 font-bold">Bienvenido, <span id="user-display-name">---</span></p>
+                <p class="text-slate-700 font-bold uppercase text-xs">Bienvenido: <span id="user-display-name" class="text-purple-700">---</span></p>
             </div>
             <div class="flex gap-2">
-                <button onclick="abrirModalNuevoCurso()" class="bg-purple-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-800">+ Nuevo Curso</button>
+                <button onclick="abrirModalNuevoCurso()" class="bg-purple-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-800 transition-all">+ Nuevo Curso</button>
             </div>
         </header>
 
@@ -76,13 +76,13 @@
             <div class="lg:col-span-2 space-y-6">
                 <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Mis Cursos Activos</h2>
                 <div id="mis-cursos-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    </div>
+                </div>
             </div>
 
             <div class="space-y-6">
                 <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Progreso del Equipo</h2>
                 <div id="ranking-container" class="glass-card p-4 space-y-3">
-                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -171,43 +171,44 @@
             container.innerHTML = "";
             res.misCursos.forEach(curso => {
                 if(curso.estado === "Activo") {
+                    // CAMBIO AQUÍ: Se agregó curso.progreso para que el slider inicie bien
                     container.innerHTML += `
-                        <div onclick="abrirReporteQuincenal('${curso.id}', '${curso.nombre}')" class="glass-card p-5 cursor-pointer hover:scale-105 transition-all-suave border-l-8 border-purple-800">
-                            <h3 class="font-black text-slate-800 uppercase">${curso.nombre}</h3>
+                        <div onclick="abrirReporteQuincenal('${curso.id}', '${curso.nombre}', '${curso.progreso}')" class="glass-card p-5 cursor-pointer hover:scale-105 transition-all-suave border-l-8 border-purple-800 shadow-lg">
+                            <h3 class="font-black text-slate-800 uppercase text-sm">${curso.nombre}</h3>
                             <div class="w-full bg-white/30 rounded-full h-2 mt-3">
                                 <div class="bg-purple-800 h-2 rounded-full" style="width: ${curso.progreso}%"></div>
                             </div>
-                            <p class="text-xs mt-2 font-bold text-slate-600">Avance: ${curso.progreso}%</p>
+                            <p class="text-xs mt-2 font-bold text-slate-600 uppercase text-[10px]">Avance: ${curso.progreso}%</p>
                         </div>
                     `;
                 }
             });
 
             const rankCont = document.getElementById('ranking-container');
-    rankCont.innerHTML = "";
-    res.globalRanking.forEach(r => {
-        rankCont.innerHTML += `
-            <div onclick="verRutaAprendizaje('${r.idCurso}', '${r.usuario}', '${r.curso}')" 
-                 class="flex justify-between items-center border-b border-white/20 pb-2 cursor-pointer hover:bg-white/40 p-2 rounded-xl transition-all-suave">
-                <div class="text-[11px]">
-                    <p class="font-black text-purple-900 uppercase">${r.usuario}</p>
-                    <p class="text-slate-500 italic">${r.curso}</p>
-                </div>
-                <span class="text-xs font-black bg-purple-100 text-purple-900 px-2 py-1 rounded-lg">${r.progreso}%</span>
-            </div>
-        `;
-    });
+            rankCont.innerHTML = "";
+            res.globalRanking.forEach(r => {
+                rankCont.innerHTML += `
+                    <div onclick="verRutaAprendizaje('${r.idCurso}', '${r.usuario}', '${r.curso}')" 
+                         class="flex justify-between items-center border-b border-white/20 pb-2 cursor-pointer hover:bg-white/40 p-2 rounded-xl transition-all-suave">
+                        <div class="text-[11px]">
+                            <p class="font-black text-purple-900 uppercase">${r.usuario}</p>
+                            <p class="text-slate-500 italic">${r.curso}</p>
+                        </div>
+                        <span class="text-xs font-black bg-purple-100 text-purple-900 px-2 py-1 rounded-lg">${r.progreso}%</span>
+                    </div>
+                `;
+            });
         }
 
         function abrirModalNuevoCurso() {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-black mb-4">INICIAR NUEVA CAPACITACIÓN</h2>
-                <input type="text" id="new-curso-nombre" placeholder="Nombre del curso" class="w-full p-3 border rounded-xl mb-3">
-                <input type="date" id="new-curso-fecha" class="w-full p-3 border rounded-xl mb-4">
+                <h2 class="text-xl font-black mb-4 uppercase text-purple-900">Iniciar Capacitación</h2>
+                <input type="text" id="new-curso-nombre" placeholder="Nombre del curso" class="w-full p-3 border rounded-xl mb-3 outline-none focus:ring-2 focus:ring-purple-600 bg-white/50">
+                <input type="date" id="new-curso-fecha" class="w-full p-3 border rounded-xl mb-4 outline-none focus:ring-2 focus:ring-purple-600 bg-white/50">
                 <div class="flex gap-2">
-                    <button onclick="guardarNuevoCurso()" class="flex-1 bg-purple-900 text-white font-bold py-3 rounded-xl">CREAR</button>
-                    <button onclick="cerrarModal()" class="flex-1 bg-slate-200 py-3 rounded-xl">CANCELAR</button>
+                    <button onclick="guardarNuevoCurso()" class="flex-1 bg-purple-900 text-white font-bold py-3 rounded-xl uppercase">Crear</button>
+                    <button onclick="cerrarModal()" class="flex-1 bg-slate-200 py-3 rounded-xl uppercase font-bold text-slate-500">Cancelar</button>
                 </div>
             `;
         }
@@ -225,7 +226,6 @@
             cargarDashboard();
         }
 
-        // --- CAMBIO SOLICITADO: LÓGICA DE 100% Y CERTIFICADO ---
         function actualizarUIReporte(valor) {
             document.getElementById('val-prog').innerText = valor + '%';
             const zonaCert = document.getElementById('zona-certificado');
@@ -242,33 +242,35 @@
         function abrirReporteQuincenal(id, nombre, progresoActual) {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-black mb-2 uppercase">Reporte de Avance</h2>
+                <h2 class="text-xl font-black mb-2 uppercase text-slate-800">Actualizar Avance</h2>
                 <p class="text-sm font-bold text-purple-900 mb-6 italic">Curso: ${nombre}</p>
-                <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24" placeholder="Escribe aquí tus aprendizajes..."></textarea>
-                <label class="block text-xs font-bold mb-1">Porcentaje de avance: <span id="val-prog" class="text-purple-900">50%</span></label>
-                <input type="range" id="rep-progreso" min="0" max="100" value="${progresoActual}" class="w-full mb-6" oninput="actualizarUIReporte(this.value)"> oninput="actualizarUIReporte(this.value)">
+                <textarea id="rep-aprendizaje" class="w-full p-3 border rounded-xl mb-4 h-24 outline-none focus:ring-2 focus:ring-purple-600 bg-white/50" placeholder="¿Qué aprendiste esta quincena?"></textarea>
+                <label class="block text-xs font-bold mb-1 uppercase text-slate-500">Porcentaje de avance: <span id="val-prog" class="text-purple-900">${progresoActual}%</span></label>
+                <input type="range" id="rep-progreso" min="0" max="100" value="${progresoActual}" class="w-full mb-6" oninput="actualizarUIReporte(this.value)">
                 
                 <div id="zona-certificado" class="hidden mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl transition-all-suave">
-                    <p class="text-xs font-bold text-green-800 mb-2">🏆 ¡Felicidades! Sube tu certificado o foto final (Opcional):</p>
-                    <input type="file" id="rep-certificado" accept="image/*,application/pdf" class="text-xs">
+                    <p class="text-xs font-bold text-green-800 mb-2 uppercase">🏆 ¡Logrado! Sube tu certificado final:</p>
+                    <input type="file" id="rep-certificado" accept="image/*" class="text-xs">
                 </div>
 
                 <div id="zona-evidencia" class="mb-6">
-                    <label class="block text-xs font-bold mb-1">Foto o documento de evidencia (Opcional):</label>
-                    <input type="file" id="rep-foto" accept="image/*,application/pdf" class="text-xs">
+                    <label class="block text-xs font-bold mb-1 uppercase text-slate-500">Sube captura de evidencia:</label>
+                    <input type="file" id="rep-foto" accept="image/*" class="text-xs">
                 </div>
 
                 <div class="flex flex-col gap-2">
-                    <button onclick="enviarReporte('${id}')" id="btn-enviar" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl">GUARDAR AVANCE</button>
-                    <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2">Cancelar</button>
+                    <button onclick="enviarReporte('${id}')" id="btn-enviar" class="w-full bg-purple-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:scale-[1.02]">GUARDAR AVANCE</button>
+                    <button onclick="cerrarModal()" class="text-slate-400 text-sm py-2 hover:underline">Cancelar</button>
                 </div>
             `;
+            // Se ejecuta para verificar si ya está al 100% al abrir
+            actualizarUIReporte(progresoActual);
         }
 
         async function enviarReporte(cursoId) {
             const btn = document.getElementById('btn-enviar');
             const progreso = document.getElementById('rep-progreso').value;
-            btn.innerText = "PROCESANDO...";
+            btn.innerText = "PROCESANDO AVANCE...";
             btn.disabled = true;
 
             const fileInput = (progreso == 100) ? document.getElementById('rep-certificado') : document.getElementById('rep-foto');
@@ -306,7 +308,7 @@
 
         function cerrarModal() { document.getElementById('modal-container').classList.add('hidden'); }
 
-	async function verRutaAprendizaje(idCurso, usuario, cursoNombre) {
+        async function verRutaAprendizaje(idCurso, usuario, cursoNombre) {
             document.getElementById('modal-container').classList.remove('hidden');
             document.getElementById('modal-content').innerHTML = `
                 <div class="relative">
@@ -329,7 +331,7 @@
             const lista = document.getElementById('historial-lista');
             lista.innerHTML = "";
 
-            if (res.historial.length === 0) {
+            if (!res.historial || res.historial.length === 0) {
                 lista.innerHTML = `
                     <div class="text-center py-10">
                         <p class="text-slate-400 italic">Este curso aún no tiene reportes registrados.</p>
@@ -338,20 +340,17 @@
             }
 
             res.historial.forEach(h => {
-                // Lógica para intentar mostrar previsualización de Google Drive
                 let previewHtml = "";
                 if (h.evidencia && h.evidencia.includes("drive.google.com")) {
-                    const fileId = h.evidencia.split('/d/')[1]?.split('/')[0];
+                    // SE CORRIGIÓ EL TEMPLATE LITERAL ${fileId} PARA QUE SE VEA LA FOTO
+                    const fileId = h.evidencia.split('/d/')[1]?.split('/')[0] || h.evidencia.split('id=')[1];
                     if (fileId) {
                         previewHtml = `
-                            <div class="mt-3 rounded-xl overflow-hidden border-2 border-purple-100 relative group">
+                            <div class="mt-3 rounded-xl overflow-hidden border-2 border-purple-100 shadow-sm">
                                 <img src="https://lh3.googleusercontent.com/d/${fileId}" 
-                                     class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" 
+                                     class="w-full h-44 object-cover" 
                                      alt="Evidencia quincenal"
-                                     onerror="this.src='https://placehold.co/400x200?text=Evidencia+en+Archivo'">
-                                <a href="${h.evidencia}" target="_blank" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-all">
-                                    VER ARCHIVO COMPLETO ↗
-                                </a>
+                                     onerror="this.src='https://placehold.co/400x200?text=Ver+Evidencia+en+Enlace'">
                             </div>`;
                     }
                 }
@@ -373,9 +372,9 @@
 
                             ${previewHtml}
                             
-                            ${!previewHtml && h.evidencia ? `
-                                <a href="${h.evidencia}" target="_blank" class="text-[10px] font-bold text-blue-600 underline mt-2 block">
-                                    Abrir documento de evidencia ↗
+                            ${h.evidencia ? `
+                                <a href="${h.evidencia}" target="_blank" class="text-[10px] font-bold text-blue-600 underline mt-2 block uppercase tracking-tighter">
+                                    Ver documento original ↗
                                 </a>` : ''}
                         </div>
                     </div>
