@@ -214,6 +214,17 @@
         }
 
         async function guardarNuevoCurso() {
+            // 1. Buscamos el botón dentro del modal para desactivarlo
+            const btn = document.querySelector('#modal-content button[onclick="guardarNuevoCurso()"]');
+            
+            // 2. Si el botón existe, lo bloqueamos de inmediato
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "CREANDO..."; // Cambiamos el texto para que el usuario sepa que está procesando
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // 3. Ejecutamos la creación del curso
             await apiPost({
                 action: 'addCourse',
                 data: {
@@ -222,6 +233,8 @@
                     fechaInicio: document.getElementById('new-curso-fecha').value
                 }
             });
+
+            // 4. Cerramos y refrescamos (el botón ya no importa porque el modal desaparece)
             cerrarModal();
             cargarDashboard();
         }
@@ -269,8 +282,13 @@
         async function enviarReporte(cursoId) {
             const btn = document.getElementById('btn-enviar');
             const progreso = document.getElementById('rep-progreso').value;
-            btn.innerText = "PROCESANDO AVANCE...";
-            btn.disabled = true;
+
+            // 1. BLOQUEO ANTI-DUPLICADOS
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "PROCESANDO Y SUBIENDO..."; // Feedback visual de carga
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
 
             const fileInput = (progreso == 100) ? document.getElementById('rep-certificado') : document.getElementById('rep-foto');
             let base64Image = "";
@@ -292,7 +310,11 @@
                     mimeType: mimeType
                 }
             };
+
+            // 2. ESPERAR A QUE EL SERVIDOR RESPONDA
             await apiPost(data);
+
+            // 3. FINALIZAR
             cerrarModal();
             cargarDashboard();
         }
